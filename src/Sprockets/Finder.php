@@ -1,0 +1,39 @@
+<?php namespace Sprockets;
+
+use SplFileInfo;
+use Sprockets\Exception\AssetNotFoundException;
+
+class Finder {
+    protected $loadPaths;
+
+    public function __construct($loadPaths)
+    {
+        $this->loadPaths = $loadPaths;
+    }
+
+    public function find($name)
+    {
+        // This function still needs a lot of improvement. The handling of file extensions isn't robust enough yet.
+
+        foreach ($this->loadPaths as $loadPath)
+        {
+            $path = $loadPath . "/$name*";
+
+            $files = glob($path);
+
+            if (count($files) > 0)
+            {
+                $file = new SplFileInfo($files[0]);
+
+                return $file->getRealPath();
+            }
+        }
+
+        throw new AssetNotFoundException($name);
+    }
+
+    public function __invoke($name)
+    {
+        return $this->find($name);
+    }
+}

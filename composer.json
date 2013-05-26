@@ -1,0 +1,19 @@
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Hacquebord-Buckles/krumo"
+        }
+    ],
+    "require": {
+        "oodle/krumo": "dev-master",
+        "leafo/scssphp": "dev-master",
+        "chh/shellwords": "dev-master"
+    },
+
+    "autoload": {
+        "psr-0": {
+            "Sprockets": "src/"
+        }
+    }
+}
