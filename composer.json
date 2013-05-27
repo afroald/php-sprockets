@@ -1,4 +1,12 @@
 {
+    "name": "afroald/php-sprockets",
+    "description": "A port (kind of) of the Sprockets gem.",
+    "authors": [
+        {
+            "name": "Roald Hacquebord",
+            "email": "roald@hacquebordbuckles.nl"
+        }
+    ],
     "repositories": [
         {
             "type": "vcs",
