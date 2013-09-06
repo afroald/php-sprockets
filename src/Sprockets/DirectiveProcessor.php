@@ -21,9 +21,19 @@ class DirectiveProcessor extends Processor {
     {
         $this->source = $content;
 
-        krumo($this->directives());
+        $directives = $this->directives();
 
-        foreach ($this->directives() as $directive)
+        // If no require_self directive is present add it to the end.
+        if(count(array_filter($directives, function($directive) {
+            return $directive['directive'] == 'require_self';
+        })) < 1) { // Anonymous functions are awesome but I still have to figure out a readable way to use them.
+            array_push($directives, array(
+                'directive' => 'require_self',
+                'arguments' => array()
+            ));
+        }
+
+        foreach ($directives as $directive)
         {
             if (!empty($this->content))
             {
