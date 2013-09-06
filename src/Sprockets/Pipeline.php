@@ -5,7 +5,6 @@ use Sprockets\Finder;
 
 class Pipeline {
     public $finder;
-    public $directivesProcessor;
 
     protected $loadPaths = array();
 
@@ -13,6 +12,7 @@ class Pipeline {
         '.css' => 'text/css',
         '.js' => 'application/javascript'
     );
+
     protected $preProcessors = array();
     protected $postProcessors = array();
     protected $engines = array();
