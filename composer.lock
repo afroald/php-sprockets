@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "4e69d222c7ee7f0a3602a1a3eb200bd6",
+    "hash": "4627c49731fdf542475c1051182d5dab",
     "packages": [
         {
             "name": "chh/shellwords",
-            "version": "dev-master",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CHH/shellwords.git",
-                "reference": "v0.1.0"
+                "reference": "8cd0e82d36ca71ae6f43466412c611249f71288c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CHH/shellwords/zipball/v0.1.0",
-                "reference": "v0.1.0",
+                "url": "https://api.github.com/repos/CHH/shellwords/zipball/8cd0e82d36ca71ae6f43466412c611249f71288c",
+                "reference": "8cd0e82d36ca71ae6f43466412c611249f71288c",
                 "shasum": ""
             },
             "require": {
@@ -37,16 +37,16 @@
         },
         {
             "name": "leafo/scssphp",
-            "version": "dev-master",
+            "version": "v0.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/leafo/scssphp.git",
-                "reference": "b2c08866f554b4b4b0f8b471922d4e261cec6678"
+                "reference": "e5a79218c349cbc03dc99004fbad938c7b82391f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/leafo/scssphp/zipball/b2c08866f554b4b4b0f8b471922d4e261cec6678",
-                "reference": "b2c08866f554b4b4b0f8b471922d4e261cec6678",
+                "url": "https://api.github.com/repos/leafo/scssphp/zipball/e5a79218c349cbc03dc99004fbad938c7b82391f",
+                "reference": "e5a79218c349cbc03dc99004fbad938c7b82391f",
                 "shasum": ""
             },
             "require": {
@@ -79,20 +79,22 @@
             ],
             "description": "scssphp is a compiler for SCSS written in PHP.",
             "homepage": "http://leafo.net/scssphp/",
-            "time": "2013-05-24 18:46:56"
-        },
+            "time": "2013-05-24 14:04:53"
+        }
+    ],
+    "packages-dev": [
         {
             "name": "oodle/krumo",
-            "version": "dev-master",
+            "version": "v0.2.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Hacquebord-Buckles/krumo.git",
-                "reference": "f8195b757a123e0f1d7abe7807cf224d682165dd"
+                "url": "https://github.com/oodle/krumo.git",
+                "reference": "29fd75f37c159c3691cdf2a7c09a59bccb3b533e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Hacquebord-Buckles/krumo/zipball/f8195b757a123e0f1d7abe7807cf224d682165dd",
-                "reference": "f8195b757a123e0f1d7abe7807cf224d682165dd",
+                "url": "https://api.github.com/repos/oodle/krumo/zipball/29fd75f37c159c3691cdf2a7c09a59bccb3b533e",
+                "reference": "29fd75f37c159c3691cdf2a7c09a59bccb3b533e",
                 "shasum": ""
             },
             "require": {
@@ -104,6 +106,7 @@
                     "class.krumo.php"
                 ]
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL"
             ],
@@ -131,24 +134,16 @@
                 "print_r",
                 "var_dump"
             ],
-            "support": {
-                "source": "https://github.com/Hacquebord-Buckles/krumo/tree/master"
-            },
-            "time": "2013-05-19 20:52:38"
+            "time": "2013-06-28 22:47:04"
         }
-    ],
-    "packages-dev": [
-
     ],
     "aliases": [
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "oodle/krumo": 20,
-        "leafo/scssphp": 20,
-        "chh/shellwords": 20
-    },
+    "stability-flags": [
+
+    ],
     "platform": [
 
     ],
