@@ -6,9 +6,12 @@ use Sprockets\File;
 use Sprockets\Pipeline;
 
 class Asset {
-    public $content;
+    protected $content;
+    protected $processedContent;
 
     protected $pipeline;
+
+    protected $directiveProcessor;
 
     protected $source;
 
@@ -47,13 +50,11 @@ class Asset {
         }
 
         // Run directive processor
-        $directiveProcessor = new DirectiveProcessor($pipeline);
-
-        $content = $directiveProcessor->process($content);
+        $content = $this->directiveProcessor()->process();
 
         // Run post-processors
 
-        $this->content = $content;
+        $this->processedContent = $content;
 
         return $this;
     }
@@ -68,7 +69,7 @@ class Asset {
 
     public function __toString()
     {
-        return $this->content;
+        return empty($this->processedContent) ? $this->content : $this->processedContent;
     }
 
     public function __get($name) {
@@ -97,5 +98,77 @@ class Asset {
     public function engines()
     {
         return array_intersect_key($this->pipeline->engines(), array_fill_keys($this->extensions(), null));
+    }
+
+    /**
+     * Return the mime-type of the asset.
+     *
+     * First try to resolve the mime-type
+     * according to the file extension. If that doesn't work use the FileInfo
+     * PECL extension. Return text/html if not able to determine the mime-type
+     *
+     * @return string
+     */
+    public function mimeType()
+    {
+        $mimeTypes = $this->pipeline->mimeTypes();
+        $extensions = $this->extensions();
+
+        if (array_key_exists($extensions[0], $mimeTypes)) {
+            return $mimeTypes[$extensions[0]];
+        }
+
+        if (function_exists('finfo_file')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $this->source->getPathname());
+            finfo_close($finfo);
+
+            return $mimeType;
+        }
+
+        return 'text/html';
+    }
+
+    public function lastModified()
+    {
+        $dependencies = $this->directiveProcessor()->dependencies();
+
+        // Return the last modified time of the current asset if there are no dependencies
+        if (count($dependencies) == 0)
+        {
+            $lastModified = new \DateTime();
+            $lastModified->setTimestamp($this->source->getMTime());
+
+            return $lastModified;
+        }
+
+        // Collect last modified times for all dependencies
+        $mtimes = array_map(function($dependency)
+        {
+            return $dependency->lastModified();
+        }, $dependencies);
+
+        // Sort the last modified times
+        usort($mtimes, function($a, $b)
+        {
+            if ($a->getTimestamp() == $b->getTimestamp())
+            {
+                return 0;
+            }
+
+            return $a->getTimestamp() < $b->getTimestamp() ? -1 : 1;
+        });
+
+        // Return the newest last modified time;
+        return $mtimes[0];
+    }
+
+    protected function directiveProcessor()
+    {
+        if (!$this->directiveProcessor) {
+            $this->directiveProcessor = new DirectiveProcessor($this->pipeline, $this->content);
+        }
+
+        return $this->directiveProcessor;
     }
 }

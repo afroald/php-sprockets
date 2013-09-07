@@ -1,11 +1,10 @@
 <?php namespace Sprockets;
 
+use Sprockets\Asset;
 use Sprockets\Pipeline;
-use Sprockets\Processor;
-
 use CHH\Shellwords;
 
-class DirectiveProcessor extends Processor {
+class DirectiveProcessor {
     const HEADER_PATTERN = "%^(//.*\n|#.*\n|/\*[\s\S]*?\*/)*%";
     const DIRECTIVE_PATTERN = "%^ \W* = \s* (\w+.*?) (\*/)? $%x";
 
@@ -14,17 +13,29 @@ class DirectiveProcessor extends Processor {
         'require_self' => 'processRequireSelfDirective'
     );
 
-    protected $source;
-    protected $content = '';
+    protected $pipeline;
 
-    public function process($content)
+    protected $content = '';
+    protected $processedContent = '';
+
+    public function __construct(Pipeline $pipeline, $content)
     {
-        $this->source = $content;
+        $this->pipeline = $pipeline;
+        $this->content = $content;
+    }
+
+    public function process()
+    {
+        if (!empty($this->processedContent))
+        {
+            return $this->processedContent;
+        }
 
         $directives = $this->directives();
 
-        // If no require_self directive is present add it to the end.
-        if(count(array_filter($directives, function($directive) {
+        // If no require_self directive is present add it to the end to make sure the asset always includes its own body.
+        if(count(array_filter($directives, function($directive)
+        {
             return $directive['directive'] == 'require_self';
         })) < 1) { // Anonymous functions are awesome but I still have to figure out a readable way to use them.
             array_push($directives, array(
@@ -35,9 +46,9 @@ class DirectiveProcessor extends Processor {
 
         foreach ($directives as $directive)
         {
-            if (!empty($this->content))
+            if (!empty($this->processedContent))
             {
-                $this->content.= "\n";
+                $this->processedContent.= "\n";
             }
 
             $directiveFunction = $this->directiveFunctions[$directive['directive']];
@@ -45,14 +56,32 @@ class DirectiveProcessor extends Processor {
             call_user_func_array(array($this, $directiveFunction), $directive['arguments']);
         }
 
-        return $this->content;
+        return $this->processedContent;
+    }
+
+    public function dependencies()
+    {
+        // Filter the directives to not contain require_self
+        $directives = array_filter($this->directives(), function($directive)
+        {
+            return $directive['directive'] !== 'require_self';
+        });
+
+        // Load assets for all directives
+        $dependencies = array_map(function($directive)
+        {
+            $file = $this->pipeline->finder->find($directive['arguments'][0]);
+            return new Asset($this->pipeline, $file);
+        }, $directives);
+
+        return $dependencies;
     }
 
     protected function header()
     {
         $matches = array();
 
-        if (1 === preg_match(self::HEADER_PATTERN, $this->source, $matches))
+        if (1 === preg_match(self::HEADER_PATTERN, $this->content, $matches))
         {
             return $matches[0];
         }
@@ -98,18 +127,18 @@ class DirectiveProcessor extends Processor {
 
         $asset = new Asset($this->pipeline, $file);
 
-        $this->content.= (string) $asset;
+        $this->processedContent.= (string) $asset;
     }
 
     protected function processRequireSelfDirective()
     {
-        $lines = explode("\n", $this->source);
+        $lines = explode("\n", $this->content);
 
         foreach ($this->directives() as $lineNumber => $directive)
         {
             unset($lines[$lineNumber - 1]);
         }
 
-        $this->content.= implode("\n", $lines);
+        $this->processedContent.= implode("\n", $lines);
     }
 }
