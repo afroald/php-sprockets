@@ -6,14 +6,22 @@ use Sprockets\Exception\AssetNotFoundException;
 class Finder {
     protected $loadPaths;
 
+    protected $typeExtensions = array(
+        'stylesheet' => '.css',
+        'javascript' => '.js'
+    );
+
     public function __construct($loadPaths)
     {
         $this->loadPaths = $loadPaths;
     }
 
-    public function find($name)
+    public function find($name, $type = null)
     {
-        // This function still needs a lot of improvement. The handling of file extensions isn't robust enough yet.
+        if ($type && !with(new SplFileInfo($name))->getExtension() && array_key_exists($type, $this->typeExtensions))
+        {
+            $name.= $this->typeExtensions[$type];
+        }
 
         foreach ($this->loadPaths as $loadPath)
         {

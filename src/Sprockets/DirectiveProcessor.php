@@ -77,6 +77,18 @@ class DirectiveProcessor {
         return $dependencies;
     }
 
+    public function stripDirectives()
+    {
+        $lines = explode("\n", $this->content);
+
+        foreach ($this->directives() as $lineNumber => $directive)
+        {
+            unset($lines[$lineNumber - 1]);
+        }
+
+        return implode("\n", $lines);
+    }
+
     protected function header()
     {
         $matches = array();
@@ -132,13 +144,6 @@ class DirectiveProcessor {
 
     protected function processRequireSelfDirective()
     {
-        $lines = explode("\n", $this->content);
-
-        foreach ($this->directives() as $lineNumber => $directive)
-        {
-            unset($lines[$lineNumber - 1]);
-        }
-
-        $this->processedContent.= implode("\n", $lines);
+        $this->processedContent.= $this->stripDirectives();
     }
 }

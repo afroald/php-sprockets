@@ -6,7 +6,7 @@ use Sprockets\Finder;
 class Pipeline {
     public $finder;
 
-    protected $loadPaths = array();
+    public $loadPaths = array();
 
     protected $mimeTypes = array(
         '.css' => 'text/css',
@@ -24,20 +24,17 @@ class Pipeline {
 
         $this->finder = new Finder($loadPaths);
 
-        // $this->registerPreProcessor('text/css', 'DirectiveProcessor');
-        // $this->registerPreProcessor('application/javascript', 'DirectiveProcessor');
-
         $this->registerEngine('.coffee', 'Sprockets\Engine\CoffeeScript');
         $this->registerEngine('.scss', 'Sprockets\Engine\Scss');
     }
 
-    public function asset($name)
+    public function asset($name, $type = null)
     {
-        $file = $this->finder->find($name);
+        $file = $this->finder->find($name, $type);
 
         $asset =  new Asset($this, $file);
 
-        return $asset->build();
+        return $asset;
     }
 
     public function mimeTypes()

@@ -34,70 +34,90 @@ class Asset {
         $this->content = $this->source->get();
     }
 
-    public function build()
-    {
-        $pipeline = $this->pipeline;
-        $content = $this->content;
-
-        // Run pre-processors
-
-        // Run engines
-        foreach ($this->engines() as $engineClass)
+    /**
+     * Allow the functions on this object to be accessed as properties.
+     * @param  string $property
+     * @return mixed
+     */
+    public function __get($property) {
+        if (method_exists($this, $property))
         {
-            $engine = new $engineClass($this->pipeline);
-
-            $content = $engine->process($content);
+            return $this->$property();
         }
 
-        // Run directive processor
-        $content = $this->directiveProcessor()->process();
-
-        // Run post-processors
-
-        $this->processedContent = $content;
-
-        return $this;
+        $trace = debug_backtrace();
+        trigger_error(
+            'Undefined property via __get(): ' . $property .
+            ' in ' . $trace[0]['file'] .
+            ' on line ' . $trace[0]['line'],
+            E_USER_ERROR);
+        return null;
     }
 
-    public function write()
+    /**
+     * Return the processed content.
+     * @return string
+     */
+    public function content()
     {
-        // Run compressors if needed
-        // Write contents to file
+        $this->build();
 
-        return $this;
+        return $this->processedContent;
     }
 
+    /**
+     * Return the processed content when this object is typecasted to a string.
+     * @return string
+     */
     public function __toString()
     {
         return empty($this->processedContent) ? $this->content : $this->processedContent;
     }
 
-    public function __get($name) {
-        if ($name == 'name')
-        {
-            return $this->source->getBasename('.' . $this->source->getExtension());
-        }
-
-        if ($name == 'path')
-        {
-            return $this->source->getRealPath();
-        }
-
-        return $this->$name;
+    /**
+     * Return the processed content excluding the dependencies.
+     * @return string
+     */
+    public function body()
+    {
+        return $this->directiveProcessor()->stripDirectives();
     }
 
-    public function extensions()
+    /**
+     * Return the filename as it would be after processing
+     * @return string
+     */
+    public function name()
     {
-        $matches = array();
+        $filename = $this->source->getBasename();
+        $extensions = $this->extensions();
 
-        preg_match_all('/\.[^.]+/', $this->source->getBasename(), $matches);
-
-        return $matches[0];
+        return str_replace(implode(array_slice($extensions, 1)), '', $filename);
     }
 
-    public function engines()
+    /**
+     * Returns the path of the source relative to the load path
+     * @return string
+     */
+    public function logicalPath()
     {
-        return array_intersect_key($this->pipeline->engines(), array_fill_keys($this->extensions(), null));
+        $path = $this->source->getRealPath();
+
+        foreach($this->pipeline->loadPaths as $loadPath)
+        {
+            $path = str_replace($loadPath, '', $path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Return an array of assets that are required in this asset.
+     * @return array
+     */
+    public function dependencies()
+    {
+        return $this->directiveProcessor()->dependencies();
     }
 
     /**
@@ -129,9 +149,13 @@ class Asset {
         return 'text/html';
     }
 
+    /**
+     * Return the time this asset or one of its depentencies was modified.
+     * @return DateTime
+     */
     public function lastModified()
     {
-        $dependencies = $this->directiveProcessor()->dependencies();
+        $dependencies = $this->dependencies;
 
         // Return the last modified time of the current asset if there are no dependencies
         if (count($dependencies) == 0)
@@ -170,5 +194,44 @@ class Asset {
         }
 
         return $this->directiveProcessor;
+    }
+
+    protected function engines()
+    {
+        return array_intersect_key($this->pipeline->engines(), array_fill_keys($this->extensions(), null));
+    }
+
+    protected function extensions()
+    {
+        $matches = array();
+
+        preg_match_all('/\.[^.]+/', $this->source->getBasename(), $matches);
+
+        return $matches[0];
+    }
+
+    protected function build()
+    {
+        if (!empty($this->processedContent)) return;
+
+        $pipeline = $this->pipeline;
+        $content = $this->content;
+
+        // Run pre-processors
+
+        // Run engines
+        foreach ($this->engines() as $engineClass)
+        {
+            $engine = new $engineClass($this->pipeline);
+
+            $content = $engine->process($content);
+        }
+
+        // Run directive processor
+        $content = $this->directiveProcessor()->process();
+
+        // Run post-processors
+
+        $this->processedContent = $content;
     }
 }
