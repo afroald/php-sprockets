@@ -12,7 +12,11 @@ class Pipeline {
 
 	protected $mimeTypes = array(
 		'.css' => 'text/css',
-		'.js' => 'application/javascript'
+		'.js' => 'application/javascript',
+
+		'.eot' => 'application/vnd.ms-fontobject',
+		'.ttf' => 'application/octet-stream',
+		'.woff' => 'application/font-woff'
 	);
 
 	protected $preProcessors = array();
