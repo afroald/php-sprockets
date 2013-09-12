@@ -2,11 +2,9 @@
 
 use Sprockets\Processor;
 
-class Scss extends Processor {
+class CoffeeScriptEngine extends Processor {
     public function process($content)
     {
-        $compiler = new \scssc();
-
-        return $compiler->compile($content);
+        return "COFFEESCRIPT: " . $content;
     }
 }

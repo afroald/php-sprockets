@@ -5,145 +5,154 @@ use Sprockets\Pipeline;
 use CHH\Shellwords;
 
 class DirectiveProcessor {
-    const HEADER_PATTERN = "%^(//.*\n|#.*\n|/\*[\s\S]*?\*/)*%";
-    const DIRECTIVE_PATTERN = "%^ \W* = \s* (\w+.*?) (\*/)? $%x";
+	const HEADER_PATTERN = "%^(//.*\n|#.*\n|/\*[\s\S]*?\*/)*%";
+	const DIRECTIVE_PATTERN = "%^ \W* = \s* (\w+.*?) (\*/)? $%x";
 
-    protected $directiveFunctions = array(
-        'require' => 'processRequireDirective',
-        'require_self' => 'processRequireSelfDirective'
-    );
+	protected $directiveFunctions = array(
+		'require' => 'processRequireDirective',
+		'require_self' => 'processRequireSelfDirective'
+	);
 
-    protected $pipeline;
+	protected $pipeline;
 
-    protected $content = '';
-    protected $processedContent = '';
+	protected $content;
+	protected $processedContent = '';
 
-    public function __construct(Pipeline $pipeline, $content)
-    {
-        $this->pipeline = $pipeline;
-        $this->content = $content;
-    }
+	public function __construct(Pipeline $pipeline)
+	{
+		$this->pipeline = $pipeline;
+	}
 
-    public function process()
-    {
-        if (!empty($this->processedContent))
-        {
-            return $this->processedContent;
-        }
+	public function process($content)
+	{
+		$this->content = $content;
+		$directives = $this->directives();
 
-        $directives = $this->directives();
+		// If no require_self directive is present add it to the end to make sure the asset always includes its own body.
+		if(count(array_filter($directives, function($directive)
+		{
+			return $directive['directive'] == 'require_self';
+		})) < 1) { // Anonymous functions are awesome but I still have to figure out a readable way to use them.
+			array_push($directives, array(
+				'directive' => 'require_self',
+				'arguments' => array()
+			));
+		}
 
-        // If no require_self directive is present add it to the end to make sure the asset always includes its own body.
-        if(count(array_filter($directives, function($directive)
-        {
-            return $directive['directive'] == 'require_self';
-        })) < 1) { // Anonymous functions are awesome but I still have to figure out a readable way to use them.
-            array_push($directives, array(
-                'directive' => 'require_self',
-                'arguments' => array()
-            ));
-        }
+		foreach ($directives as $directive)
+		{
+			if (!empty($this->processedContent))
+			{
+				$this->processedContent.= "\n";
+			}
 
-        foreach ($directives as $directive)
-        {
-            if (!empty($this->processedContent))
-            {
-                $this->processedContent.= "\n";
-            }
+			$directiveFunction = $this->directiveFunctions[$directive['directive']];
 
-            $directiveFunction = $this->directiveFunctions[$directive['directive']];
+			call_user_func_array(array($this, $directiveFunction), $directive['arguments']);
+		}
 
-            call_user_func_array(array($this, $directiveFunction), $directive['arguments']);
-        }
+		$processedContent = $this->processedContent;
 
-        return $this->processedContent;
-    }
+		$this->content = '';
+		$this->processedContent = '';
 
-    public function dependencies()
-    {
-        // Filter the directives to not contain require_self
-        $directives = array_filter($this->directives(), function($directive)
-        {
-            return $directive['directive'] !== 'require_self';
-        });
+		return $processedContent;
+	}
 
-        // Load assets for all directives
-        $dependencies = array_map(function($directive)
-        {
-            $file = $this->pipeline->finder->find($directive['arguments'][0]);
-            return new Asset($this->pipeline, $file);
-        }, $directives);
+	public function dependencies($content)
+	{
+		$this->content = $content;
 
-        return $dependencies;
-    }
+		// Filter the directives to not contain require_self
+		$directives = array_filter($this->directives(), function($directive)
+		{
+			return $directive['directive'] !== 'require_self';
+		});
 
-    public function stripDirectives()
-    {
-        $lines = explode("\n", $this->content);
+		// Load assets for all directives
+		$pipeline = $this->pipeline;
+		$dependencies = array_map(function($directive) use($pipeline)
+		{
+			$file = $pipeline->finder->find($directive['arguments'][0]);
+			return new Asset($pipeline, $file);
+		}, $directives);
 
-        foreach ($this->directives() as $lineNumber => $directive)
-        {
-            unset($lines[$lineNumber - 1]);
-        }
+		$this->content = '';
 
-        return implode("\n", $lines);
-    }
+		return $dependencies;
+	}
 
-    protected function header()
-    {
-        $matches = array();
+	public function stripDirectives($content)
+	{
+		$this->content = $content;
 
-        if (1 === preg_match(self::HEADER_PATTERN, $this->content, $matches))
-        {
-            return $matches[0];
-        }
+		$lines = explode("\n", $this->content);
 
-        return '';
-    }
+		foreach ($this->directives() as $lineNumber => $directive)
+		{
+			unset($lines[$lineNumber - 1]);
+		}
 
-    protected function directives()
-    {
-        $directives = array();
-        $classMethods = get_class_methods($this);
+		$this->content = '';
 
-        $header = $this->header();
+		return implode("\n", $lines);
+	}
 
-        $lineNumber = 0;
+	protected function header()
+	{
+		$matches = array();
 
-        foreach(explode("\n", $header) as $line)
-        {
-            $lineNumber += 1;
-            $matches = array();
+		if (1 === preg_match(self::HEADER_PATTERN, $this->content, $matches))
+		{
+			return $matches[0];
+		}
 
-            if (1 === preg_match(self::DIRECTIVE_PATTERN, $line, $matches))
-            {
-                $arguments = Shellwords::split($matches[1]);
-                $directive = array_shift($arguments);
+		return '';
+	}
 
-                if (array_key_exists($directive, $this->directiveFunctions))
-                {
-                    $directives[$lineNumber] = array(
-                        'directive' => $directive,
-                        'arguments' => $arguments
-                    );
-                }
-            }
-        }
+	protected function directives()
+	{
+		$directives = array();
+		$classMethods = get_class_methods($this);
 
-        return $directives;
-    }
+		$header = $this->header();
 
-    protected function processRequireDirective($path)
-    {
-        $file = $this->pipeline->finder->find($path);
+		$lineNumber = 0;
 
-        $asset = new Asset($this->pipeline, $file);
+		foreach(explode("\n", $header) as $line)
+		{
+			$lineNumber += 1;
+			$matches = array();
 
-        $this->processedContent.= (string) $asset;
-    }
+			if (1 === preg_match(self::DIRECTIVE_PATTERN, $line, $matches))
+			{
+				$arguments = Shellwords::split($matches[1]);
+				$directive = array_shift($arguments);
 
-    protected function processRequireSelfDirective()
-    {
-        $this->processedContent.= $this->stripDirectives();
-    }
+				if (array_key_exists($directive, $this->directiveFunctions))
+				{
+					$directives[$lineNumber] = array(
+						'directive' => $directive,
+						'arguments' => $arguments
+					);
+				}
+			}
+		}
+
+		return $directives;
+	}
+
+	protected function processRequireDirective($path)
+	{
+		$file = $this->pipeline->finder->find($path);
+
+		$asset = new Asset($this->pipeline, $file);
+
+		$this->processedContent.= (string) $asset;
+	}
+
+	protected function processRequireSelfDirective()
+	{
+		$this->processedContent.= $this->stripDirectives($this->content);
+	}
 }

@@ -2,83 +2,90 @@
 
 use Sprockets\DirectiveProcessor;
 use Sprockets\Finder;
+use Sprockets\Engine\CoffeeScriptEngine;
+use Sprockets\Engine\ScssEngine;
 
 class Pipeline {
-    public $finder;
+	public $finder;
 
-    public $loadPaths = array();
+	public $loadPaths = array();
 
-    protected $mimeTypes = array(
-        '.css' => 'text/css',
-        '.js' => 'application/javascript'
-    );
+	protected $mimeTypes = array(
+		'.css' => 'text/css',
+		'.js' => 'application/javascript'
+	);
 
-    protected $preProcessors = array();
-    protected $postProcessors = array();
-    protected $engines = array();
-    protected $compressors = array();
+	protected $preProcessors = array();
+	protected $postProcessors = array();
+	protected $engines = array();
+	protected $compressors = array();
 
-    public function __construct(array $loadPaths)
-    {
-        $this->loadPaths = $loadPaths;
+	public function __construct(array $loadPaths)
+	{
+		$this->loadPaths = $loadPaths;
 
-        $this->finder = new Finder($loadPaths);
+		$this->finder = new Finder($loadPaths);
 
-        $this->registerEngine('.coffee', 'Sprockets\Engine\CoffeeScript');
-        $this->registerEngine('.scss', 'Sprockets\Engine\Scss');
-    }
+		$this->registerEngine('.coffee', new CoffeeScriptEngine($this));
+		$this->registerEngine('.scss', new ScssEngine($this));
+	}
 
-    public function asset($name, $type = null)
-    {
-        $file = $this->finder->find($name, $type);
+	public function asset($name, $type = null)
+	{
+		$file = $this->finder->find($name, $type);
 
-        $asset =  new Asset($this, $file);
+		$asset =  new Asset($this, $file);
 
-        return $asset;
-    }
+		return $asset;
+	}
 
-    public function mimeTypes()
-    {
-        return $this->mimeTypes;
-    }
+	public function mimeTypes()
+	{
+		return $this->mimeTypes;
+	}
 
-    public function engines()
-    {
-        return $this->engines;
-    }
+	public function engine($extension)
+	{
+		return array_key_exists($extension, $this->engines) ? $this->engines[$extension] : null;
+	}
 
-    public function registerMimeType($mimeType, $extension)
-    {
-        $this->mimeTypes[$extension] = $mimeType;
-    }
+	public function engines()
+	{
+		return $this->engines;
+	}
 
-    public function registerPreProcessor($mimeType, $class)
-    {
-        if (!array_key_exists($mimeType, $this->preProcessors) or !is_array($this->preProcessors[$mimeType]))
-        {
-            $this->preProcessors[$mimeType] = array();
-        }
+	public function registerMimeType($mimeType, $extension)
+	{
+		$this->mimeTypes[$extension] = $mimeType;
+	}
 
-        $this->preProcessors[$mimeType][] = $class;
-    }
+	public function registerPreProcessor($mimeType, $class)
+	{
+		if (!array_key_exists($mimeType, $this->preProcessors) or !is_array($this->preProcessors[$mimeType]))
+		{
+			$this->preProcessors[$mimeType] = array();
+		}
 
-    public function registerPostProcessor($mimeType, $class)
-    {
+		$this->preProcessors[$mimeType][] = $class;
+	}
 
-    }
+	public function registerPostProcessor($mimeType, $class)
+	{
 
-    public function registerEngine($extension, $class)
-    {
-        $this->engines[$extension] = $class;
-    }
+	}
 
-    public function registerCompressor($mimeType, $id, $class)
-    {
-        if (!array_key_exists($mimeType, $this->compressors) or !is_array($this->compressors[$mimeType]))
-        {
-            $this->compressors[$mimeType] = array();
-        }
+	public function registerEngine($extension, $class)
+	{
+		$this->engines[$extension] = $class;
+	}
 
-        $this->compressors[$mimeType][$id] = $class;
-    }
+	public function registerCompressor($mimeType, $id, $class)
+	{
+		if (!array_key_exists($mimeType, $this->compressors) or !is_array($this->compressors[$mimeType]))
+		{
+			$this->compressors[$mimeType] = array();
+		}
+
+		$this->compressors[$mimeType][$id] = $class;
+	}
 }
