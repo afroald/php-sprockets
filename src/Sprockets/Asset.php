@@ -6,6 +6,7 @@ use Sprockets\File;
 use Sprockets\Pipeline;
 
 class Asset {
+	protected $static = false;
 	protected $content;
 	protected $processedContent;
 	protected $bundledContent;
@@ -32,7 +33,16 @@ class Asset {
 
 		$this->source = $source;
 
-		$this->content = $this->source->get();
+		// Check if this is a file we can process. If not, treat it as a static asset (image, font, etc.)
+		// Assume only css and js files need to be processed for now.
+		if (in_array($this->mimeType, array('text/css', 'application/javascript')))
+		{
+			$this->content = $this->source->get();
+		}
+		else {
+			$this->static = true;
+		}
+
 	}
 
 	/**
@@ -61,6 +71,11 @@ class Asset {
 	 */
 	public function content()
 	{
+		if ($this->static)
+		{
+			return $this->source->get();
+		}
+
 		$this->process();
 		$this->bundle();
 
@@ -82,6 +97,11 @@ class Asset {
 	 */
 	public function body()
 	{
+		if ($this->static)
+		{
+			return $this->content();
+		}
+
 		$this->process();
 
 		return $this->directiveProcessor()->stripDirectives($this->processedContent);
@@ -121,7 +141,7 @@ class Asset {
 	 */
 	public function dependencies()
 	{
-		return $this->directiveProcessor()->dependencies($this->content);
+		return $this->static ? array() : $this->directiveProcessor()->dependencies($this->content);
 	}
 
 	/**
