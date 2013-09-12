@@ -200,11 +200,6 @@ class Asset {
 		return $this->directiveProcessor;
 	}
 
-	protected function engines()
-	{
-		return array_intersect_key($this->pipeline->engines(), array_fill_keys($this->extensions(), null));
-	}
-
 	protected function extensions()
 	{
 		$matches = array();
