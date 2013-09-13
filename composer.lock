@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "6e038af9cec3416294b29ed61a2334d6",
+    "hash": "7caf36bcee565745cd2e4f453b34eb4f",
     "packages": [
         {
             "name": "chh/shellwords",
@@ -34,57 +34,6 @@
             ],
             "description": "Lame port of Ruby's Shellwords.rb",
             "time": "2012-12-28 15:47:39"
-        },
-        {
-            "name": "richthegeek/phpsass",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/richthegeek/phpsass.git",
-                "reference": "38b33f638217a921c8abe00fbec372e62681a37d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/richthegeek/phpsass/zipball/38b33f638217a921c8abe00fbec372e62681a37d",
-                "reference": "38b33f638217a921c8abe00fbec372e62681a37d",
-                "shasum": ""
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "script/",
-                    "renderers/",
-                    "tree/",
-                    "SassException.php",
-                    "SassFile.php",
-                    "SassParser.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Richard Lyon",
-                    "homepage": "https://github.com/richthegeek"
-                },
-                {
-                    "name": "Sebastian Siemssen",
-                    "homepage": "https://twitter.com/thefubhy"
-                },
-                {
-                    "name": "Steve Jones",
-                    "homepage": "https://github.com/darthsteven"
-                },
-                {
-                    "name": "Sam Richard",
-                    "homepage": "https://github.com/snugug"
-                }
-            ],
-            "description": "PHPSass is a PHP compiler for SASS, a popular CSS pre-processor language.",
-            "homepage": "http://phpsass.com",
-            "time": "2013-06-27 14:13:35"
         }
     ],
     "packages-dev": [
@@ -146,9 +95,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "richthegeek/phpsass": 20
-    },
+    "stability-flags": [
+
+    ],
     "platform": [
 
     ],

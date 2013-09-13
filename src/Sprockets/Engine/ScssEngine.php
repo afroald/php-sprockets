@@ -1,19 +1,21 @@
 <?php namespace Sprockets\Engine;
 
 use Sprockets\Processor;
+use Sprockets\TmpFile;
 
 class ScssEngine extends Processor {
 	public function process($content)
 	{
-		$options = array(
-			'style' => 'nested',
-			'cache' => false,
-			'syntax' => 'scss',
-			'debug' => false
-		);
+		$tmpFile = new TmpFile();
+        $tmpFile->put($content);
 
-		$parser = new \SassParser($options);
+        $command = "compass compile {$tmpFile} --sass-dir {$tmpFile->getPath()}";
 
-		return $parser->toCss($content, false);
+        $output = array();
+        exec($command, $output);
+
+        krumo($output);
+
+		return $content;
 	}
 }
