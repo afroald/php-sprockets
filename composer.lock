@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "4627c49731fdf542475c1051182d5dab",
+    "hash": "f1174c8c6295b8357ad75f9e647b6c8e",
     "packages": [
         {
             "name": "chh/shellwords",
@@ -37,16 +37,16 @@
         },
         {
             "name": "leafo/scssphp",
-            "version": "v0.0.7",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/leafo/scssphp.git",
-                "reference": "e5a79218c349cbc03dc99004fbad938c7b82391f"
+                "reference": "68cc775fa4f0c6c8396bc9a36831ede199c682f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/leafo/scssphp/zipball/e5a79218c349cbc03dc99004fbad938c7b82391f",
-                "reference": "e5a79218c349cbc03dc99004fbad938c7b82391f",
+                "url": "https://api.github.com/repos/leafo/scssphp/zipball/68cc775fa4f0c6c8396bc9a36831ede199c682f2",
+                "reference": "68cc775fa4f0c6c8396bc9a36831ede199c682f2",
                 "shasum": ""
             },
             "require": {
@@ -79,7 +79,42 @@
             ],
             "description": "scssphp is a compiler for SCSS written in PHP.",
             "homepage": "http://leafo.net/scssphp/",
-            "time": "2013-05-24 14:04:53"
+            "time": "2013-09-09 02:38:17"
+        },
+        {
+            "name": "leafo/scssphp-compass",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/scssphp-compass.git",
+                "reference": "f1631ddb17731326863954d99b39694f0bbed6ec"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/scssphp-compass/zipball/f1631ddb17731326863954d99b39694f0bbed6ec",
+                "reference": "f1631ddb17731326863954d99b39694f0bbed6ec",
+                "shasum": ""
+            },
+            "require": {
+                "leafo/scssphp": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "compass.inc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "Compass for scssphp",
+            "homepage": "http://leafo.net/scssphp/",
+            "time": "2012-08-02 02:04:32"
         }
     ],
     "packages-dev": [
@@ -141,9 +176,10 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": {
+        "leafo/scssphp": 20,
+        "leafo/scssphp-compass": 20
+    },
     "platform": [
 
     ],
