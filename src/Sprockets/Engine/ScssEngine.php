@@ -3,11 +3,17 @@
 use Sprockets\Processor;
 
 class ScssEngine extends Processor {
-    public function process($content)
-    {
-        $compiler = new \scssc();
-        new \scss_compass($compiler);
+	public function process($content)
+	{
+		$options = array(
+			'style' => 'nested',
+			'cache' => false,
+			'syntax' => 'scss',
+			'debug' => false
+		);
 
-        return $compiler->compile($content);
-    }
+		$parser = new \SassParser($options);
+
+		return $parser->toCss($content, false);
+	}
 }

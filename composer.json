@@ -14,8 +14,7 @@
         }
     ],
     "require": {
-        "leafo/scssphp": "dev-master",
-        "leafo/scssphp-compass": "dev-master",
+        "richthegeek/phpsass": "dev-master",
         "chh/shellwords": "0.1.0"
     },
     "require-dev": {
