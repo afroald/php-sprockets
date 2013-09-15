@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "f1174c8c6295b8357ad75f9e647b6c8e",
+    "hash": "054d3ac9a7c77cc771c53e5c8d98d15f",
     "packages": [
         {
             "name": "chh/shellwords",
@@ -86,13 +86,13 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/leafo/scssphp-compass.git",
-                "reference": "f1631ddb17731326863954d99b39694f0bbed6ec"
+                "url": "https://github.com/afroald/scssphp-compass.git",
+                "reference": "faf85eb41d240b45acc16db8ce7f8ffb1f6084d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/leafo/scssphp-compass/zipball/f1631ddb17731326863954d99b39694f0bbed6ec",
-                "reference": "f1631ddb17731326863954d99b39694f0bbed6ec",
+                "url": "https://api.github.com/repos/afroald/scssphp-compass/zipball/faf85eb41d240b45acc16db8ce7f8ffb1f6084d8",
+                "reference": "faf85eb41d240b45acc16db8ce7f8ffb1f6084d8",
                 "shasum": ""
             },
             "require": {
@@ -104,7 +104,6 @@
                     "compass.inc.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Leaf Corcoran",
@@ -114,7 +113,10 @@
             ],
             "description": "Compass for scssphp",
             "homepage": "http://leafo.net/scssphp/",
-            "time": "2012-08-02 02:04:32"
+            "support": {
+                "source": "https://github.com/afroald/scssphp-compass/tree/master"
+            },
+            "time": "2013-09-15 10:52:54"
         }
     ],
     "packages-dev": [

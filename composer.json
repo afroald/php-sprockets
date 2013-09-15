@@ -11,6 +11,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/Hacquebord-Buckles/krumo"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/afroald/scssphp-compass"
         }
     ],
     "require": {
