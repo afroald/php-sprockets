@@ -190,9 +190,10 @@ class Asset {
 		$dependencies = $this->dependencies;
 
 		// Collect last modified times for all dependencies
-		$mtimes = array_map(function($dependency)
+		$currentAsset = $this;
+		$mtimes = array_map(function($dependency) use($currentAsset)
 		{
-			if ($dependency == $this)
+			if ($dependency == $currentAsset)
 			{
 				return $lastModified;
 			}
