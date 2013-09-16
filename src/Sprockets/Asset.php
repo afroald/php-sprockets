@@ -1,15 +1,11 @@
 <?php namespace Sprockets;
 
 use Sprockets\Exception\AssetNotFoundException;
-use Sprockets\DirectiveProcessor;
-use Sprockets\File;
-use Sprockets\Pipeline;
 
 class Asset {
 	protected $static = false;
-	protected $content;
-	protected $processedContent;
-	protected $bundledContent;
+	protected $processedContent = '';
+	protected $bundledContent = '';
 
 	protected $pipeline;
 
@@ -37,7 +33,7 @@ class Asset {
 		// Assume only css and js files need to be processed for now.
 		if (in_array($this->mimeType, array('text/css', 'application/javascript')))
 		{
-			$this->content = $this->source->get();
+			// $this->content = $this->source->get();
 		}
 		else {
 			$this->static = true;
@@ -66,7 +62,7 @@ class Asset {
 	}
 
 	/**
-	 * Return the processed content.
+	 * Return the processed and bundled content.
 	 * @return string
 	 */
 	public function content()
@@ -104,7 +100,7 @@ class Asset {
 
 		$this->process();
 
-		return $this->directiveProcessor()->stripDirectives($this->processedContent);
+		return $this->processedContent;
 	}
 
 	/**
@@ -141,7 +137,7 @@ class Asset {
 	 */
 	public function dependencies()
 	{
-		return $this->static ? array() : $this->directiveProcessor()->dependencies($this->content);
+		return $this->static ? array($this) : $this->directiveProcessor()->dependencies();
 	}
 
 	/**
@@ -181,14 +177,11 @@ class Asset {
 	{
 		$dependencies = $this->dependencies;
 
-		// Return the last modified time of the current asset if there are no dependencies
-		if (count($dependencies) == 0)
-		{
-			$lastModified = new \DateTime();
-			$lastModified->setTimestamp($this->source->getMTime());
+		$lastModified = new \DateTime();
+		$lastModified->setTimestamp($this->source->getMTime());
 
-			return $lastModified;
-		}
+		// Return the last modified time of the current asset if there are no dependencies
+		if (count($dependencies) == 0) return $lastModified;
 
 		// Collect last modified times for all dependencies
 		$mtimes = array_map(function($dependency)
@@ -196,7 +189,10 @@ class Asset {
 			return $dependency->lastModified();
 		}, $dependencies);
 
-		// Sort the last modified times
+		// Add the last modified time for this asset
+		$mtimes[] = $lastModified;
+
+		// Sort the last modified times descending
 		usort($mtimes, function($a, $b)
 		{
 			if ($a->getTimestamp() == $b->getTimestamp())
@@ -204,7 +200,7 @@ class Asset {
 				return 0;
 			}
 
-			return $a->getTimestamp() < $b->getTimestamp() ? -1 : 1;
+			return $a->getTimestamp() < $b->getTimestamp() ? 1 : -1;
 		});
 
 		// Return the newest last modified time;
@@ -213,8 +209,9 @@ class Asset {
 
 	protected function directiveProcessor()
 	{
-		if (!$this->directiveProcessor) {
-			$this->directiveProcessor = new DirectiveProcessor($this->pipeline);
+		if (!$this->directiveProcessor)
+		{
+			$this->directiveProcessor = new DirectiveProcessor($this->pipeline, $this, $this->source);
 		}
 
 		return $this->directiveProcessor;
@@ -233,7 +230,8 @@ class Asset {
 	{
 		if (!empty($this->processedContent)) return;
 
-		$content = $this->content;
+		// We want to run all the processors on the file without the directives included.
+		$content = $this->directiveProcessor()->body();
 
 		// Run pre-processors
 
@@ -257,12 +255,30 @@ class Asset {
 	{
 		if (!empty($this->bundledContent)) return;
 
-		$this->process();
-		$this->bundledContent = $this->directiveProcessor()->process($this->processedContent);
-	}
+		$requiredAssets = $this->directiveProcessor()->requiredAssets();
+		$content = '';
+		$bodyWritten = false;
 
-	protected function compress()
-	{
+		foreach ($requiredAssets as $asset)
+		{
+			if ($asset == $this)
+			{
+				$content.= $this->body();
+				$bodyWritten = true;
+			}
+			else
+			{
+				$content.= $asset->content();
+			}
 
+			$content.= PHP_EOL;
+		}
+
+		if (!$bodyWritten)
+		{
+			$content.= $this->body();
+		}
+
+		$this->bundledContent = $content;
 	}
 }

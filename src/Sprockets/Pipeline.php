@@ -1,7 +1,5 @@
 <?php namespace Sprockets;
 
-use Sprockets\DirectiveProcessor;
-use Sprockets\Finder;
 use Sprockets\Engine\CoffeeScriptEngine;
 use Sprockets\Engine\ScssEngine;
 
@@ -24,6 +22,8 @@ class Pipeline {
 	protected $engines = array();
 	protected $compressors = array();
 
+	protected $assetCache = array();
+
 	public function __construct(array $loadPaths)
 	{
 		$this->loadPaths = $loadPaths;
@@ -37,8 +37,16 @@ class Pipeline {
 	public function asset($name, $type = null)
 	{
 		$file = $this->finder->find($name, $type);
+		$cacheKey = md5($file);
 
-		$asset =  new Asset($this, $file);
+		if (array_key_exists($cacheKey, $this->assetCache))
+		{
+			return $this->assetCache[$cacheKey];
+		}
+
+		$asset = new Asset($this, $file);
+
+		$this->assetCache[$cacheKey] = $asset;
 
 		return $asset;
 	}

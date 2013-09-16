@@ -1,7 +1,5 @@
 <?php namespace Sprockets;
 
-use Sprockets\Asset;
-use Sprockets\Pipeline;
 use CHH\Shellwords;
 
 class DirectiveProcessor {
@@ -13,96 +11,56 @@ class DirectiveProcessor {
 		'require_self' => 'processRequireSelfDirective'
 	);
 
+	protected $processed = false;
+
 	protected $pipeline;
+	protected $asset;
+	protected $source;
 
-	protected $content;
-	protected $processedContent = '';
+	protected $dependencies = array();
+	protected $requiredAssets = array();
 
-	public function __construct(Pipeline $pipeline)
+	public function __construct(Pipeline $pipeline, Asset $asset, File $source)
 	{
 		$this->pipeline = $pipeline;
+		$this->asset = $asset;
+		$this->source = $source;
 	}
 
-	public function process($content)
+	public function dependencies()
 	{
-		$this->content = $content;
+		$this->process();
+
+		return $this->dependencies;
+	}
+
+	public function requiredAssets()
+	{
+		$this->process();
+
+		return $this->requiredAssets;
+	}
+
+	public function body()
+	{
+		$content = $this->source->get();
 		$directives = $this->directives();
 
-		// If no require_self directive is present add it to the end to make sure the asset always includes its own body.
-		if(count(array_filter($directives, function($directive)
-		{
-			return $directive['directive'] == 'require_self';
-		})) < 1) { // Anonymous functions are awesome but I still have to figure out a readable way to use them.
-			array_push($directives, array(
-				'directive' => 'require_self',
-				'arguments' => array()
-			));
-		}
+		$lines = preg_split('/\r\n|\n|\r/', $content);
 
-		foreach ($directives as $directive)
-		{
-			if (!empty($this->processedContent))
-			{
-				$this->processedContent.= "\n";
-			}
-
-			$directiveFunction = $this->directiveFunctions[$directive['directive']];
-
-			call_user_func_array(array($this, $directiveFunction), $directive['arguments']);
-		}
-
-		$processedContent = $this->processedContent;
-
-		$this->content = '';
-		$this->processedContent = '';
-
-		return $processedContent;
-	}
-
-	public function dependencies($content)
-	{
-		$this->content = $content;
-
-		// Filter the directives to not contain require_self
-		$directives = array_filter($this->directives(), function($directive)
-		{
-			return $directive['directive'] !== 'require_self';
-		});
-
-		// Load assets for all directives
-		$pipeline = $this->pipeline;
-		$dependencies = array_map(function($directive) use($pipeline)
-		{
-			$file = $pipeline->finder->find($directive['arguments'][0]);
-			return new Asset($pipeline, $file);
-		}, $directives);
-
-		$this->content = '';
-
-		return $dependencies;
-	}
-
-	public function stripDirectives($content)
-	{
-		$this->content = $content;
-
-		$lines = explode("\n", $this->content);
-
-		foreach ($this->directives() as $lineNumber => $directive)
+		foreach ($directives as $lineNumber => $directive)
 		{
 			unset($lines[$lineNumber - 1]);
 		}
 
-		$this->content = '';
-
-		return implode("\n", $lines);
+		return implode(PHP_EOL, $lines);
 	}
 
 	protected function header()
 	{
 		$matches = array();
 
-		if (1 === preg_match(self::HEADER_PATTERN, $this->content, $matches))
+		if (1 === preg_match(self::HEADER_PATTERN, $this->source->get(), $matches))
 		{
 			return $matches[0];
 		}
@@ -113,13 +71,11 @@ class DirectiveProcessor {
 	protected function directives()
 	{
 		$directives = array();
-		$classMethods = get_class_methods($this);
-
 		$header = $this->header();
 
 		$lineNumber = 0;
 
-		foreach(explode("\n", $header) as $line)
+		foreach(preg_split('/\r\n|\n|\r/', $header) as $line)
 		{
 			$lineNumber += 1;
 			$matches = array();
@@ -142,17 +98,45 @@ class DirectiveProcessor {
 		return $directives;
 	}
 
+	protected function dependOn(Asset $asset)
+	{
+		if ($asset == $this->asset) return;
+
+		$this->dependencies[] = $asset;
+	}
+
+	protected function requireAsset(Asset $asset)
+	{
+		$this->dependOn($asset);
+
+		$this->requiredAssets[] = $asset;
+	}
+
+	protected function process()
+	{
+		if ($this->processed) return;
+
+		$directives = $this->directives();
+
+		foreach ($directives as $lineNumber => $directive)
+		{
+			$directiveFunction = $this->directiveFunctions[$directive['directive']];
+
+			call_user_func_array(array($this, $directiveFunction), $directive['arguments']);
+		}
+
+		$this->processed = true;
+	}
+
 	protected function processRequireDirective($path)
 	{
-		$file = $this->pipeline->finder->find($path);
+		$asset = $this->pipeline->asset($path);
 
-		$asset = new Asset($this->pipeline, $file);
-
-		$this->processedContent.= (string) $asset;
+		$this->requireAsset($asset);
 	}
 
 	protected function processRequireSelfDirective()
 	{
-		$this->processedContent.= $this->stripDirectives($this->content);
+		$this->requireAsset($this->asset);
 	}
 }
