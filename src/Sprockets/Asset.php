@@ -31,11 +31,8 @@ class Asset {
 
 		// Check if this is a file we can process. If not, treat it as a static asset (image, font, etc.)
 		// Assume only css and js files need to be processed for now.
-		if (in_array($this->mimeType, array('text/css', 'application/javascript')))
+		if (!in_array($this->mimeType, array('text/css', 'application/javascript')))
 		{
-			// $this->content = $this->source->get();
-		}
-		else {
 			$this->static = true;
 		}
 
@@ -175,10 +172,13 @@ class Asset {
 	 */
 	public function lastModified()
 	{
-		$dependencies = $this->dependencies;
-
 		$lastModified = new \DateTime();
 		$lastModified->setTimestamp($this->source->getMTime());
+
+		// Don't try to fetch dependencies on a static asset. It gives segmentation faults :-s
+		if ($this->static) return $lastModified;
+
+		$dependencies = $this->dependencies;
 
 		// Return the last modified time of the current asset if there are no dependencies
 		if (count($dependencies) == 0) return $lastModified;
