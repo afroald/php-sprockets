@@ -129,12 +129,21 @@ class Asset {
 	}
 
 	/**
-	 * Return an array of assets that are required in this asset.
+	 * Return an array of assets that this asset depends on.
 	 * @return array
 	 */
 	public function dependencies()
 	{
 		return $this->static ? array($this) : $this->directiveProcessor()->dependencies();
+	}
+
+	/**
+	 * Return an array of assets that this asset requires.
+	 * @return array
+	 */
+	public function requiredAssets()
+	{
+		return $this->static ? array($this) : $this->directiveProcessor->requiredAssets();
 	}
 
 	/**
@@ -180,12 +189,14 @@ class Asset {
 
 		$dependencies = $this->dependencies;
 
-		// Return the last modified time of the current asset if there are no dependencies
-		if (count($dependencies) == 0) return $lastModified;
-
 		// Collect last modified times for all dependencies
 		$mtimes = array_map(function($dependency)
 		{
+			if ($dependency == $this)
+			{
+				return $lastModified;
+			}
+
 			return $dependency->lastModified();
 		}, $dependencies);
 

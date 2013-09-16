@@ -31,12 +31,22 @@ class DirectiveProcessor {
 	{
 		$this->process();
 
+		if (array_search($this->asset, $this->dependencies) === false)
+		{
+			$this->dependOn($this->asset);
+		}
+
 		return $this->dependencies;
 	}
 
 	public function requiredAssets()
 	{
 		$this->process();
+
+		if (array_search($this->asset, $this->requiredAssets) === false)
+		{
+			$this->requireAsset($this->asset);
+		}
 
 		return $this->requiredAssets;
 	}
