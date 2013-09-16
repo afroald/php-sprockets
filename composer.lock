@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "d79dc1103663480ca5b949ff8b99fae3",
+    "hash": "b31516dac5d665bb20a6374addf3bc36",
     "packages": [
         {
             "name": "chh/shellwords",
@@ -78,6 +78,47 @@
                 "javascript"
             ],
             "time": "2012-12-18 03:52:51"
+        },
+        {
+            "name": "leafo/lessphp",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/leafo/lessphp.git",
+                "reference": "9cfa4728e186f2679394b903bc2340926062990a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/leafo/lessphp/zipball/9cfa4728e186f2679394b903bc2340926062990a",
+                "reference": "9cfa4728e186f2679394b903bc2340926062990a",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.3-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "lessc.inc.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Leaf Corcoran",
+                    "email": "leafot@gmail.com",
+                    "homepage": "http://leafo.net"
+                }
+            ],
+            "description": "lessphp is a compiler for LESS written in PHP.",
+            "homepage": "http://leafo.net/lessphp/",
+            "time": "2013-09-11 20:11:27"
         },
         {
             "name": "leafo/scssphp",
@@ -225,6 +266,7 @@
     "stability-flags": {
         "leafo/scssphp": 20,
         "leafo/scssphp-compass": 20,
+        "leafo/lessphp": 20,
         "coffeescript/coffeescript": 20
     },
     "platform": [

@@ -8,7 +8,7 @@ class Processor implements ProcessorInterface {
 		$this->pipeline = $pipeline;
 	}
 
-	public function process($content)
+	public function process(Asset $asset, $content)
 	{
 		return $content;
 	}

@@ -2,6 +2,7 @@
 
 use Sprockets\Engine\CoffeeScriptEngine;
 use Sprockets\Engine\ScssEngine;
+use Sprockets\Engine\LessEngine;
 
 class Pipeline {
 	public $finder;
@@ -32,6 +33,7 @@ class Pipeline {
 
 		$this->registerEngine('.coffee', new CoffeeScriptEngine($this));
 		$this->registerEngine('.scss', new ScssEngine($this));
+		$this->registerEngine('.less', new LessEngine($this));
 	}
 
 	public function asset($name, $type = null)

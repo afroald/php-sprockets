@@ -3,11 +3,11 @@
 use Sprockets\Asset;
 use Sprockets\Processor;
 
-class ScssEngine extends Processor {
+class LessEngine extends Processor {
 	public function process(Asset $asset, $content)
 	{
-		$compiler = new \scssc();
-		new \scss_compass($compiler);
+		$compiler = new \lessc();
+		$compiler->addImportDir($asset->path());
 
 		return $compiler->compile($content);
 	}

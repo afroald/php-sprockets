@@ -113,6 +113,15 @@ class Asset {
 	}
 
 	/**
+	 * Return the path to the asset, omitting the filename and any trailing slash.
+	 * @return string
+	 */
+	public function path()
+	{
+		return $this->source->getPath();
+	}
+
+	/**
 	 * Returns the path of the source relative to the load path
 	 * @return string
 	 */
@@ -253,7 +262,7 @@ class Asset {
 
 			if ($engine)
 			{
-				$content = $engine->process($content);
+				$content = $engine->process($this, $content);
 			}
 		}
 
