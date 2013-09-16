@@ -143,7 +143,7 @@ class Asset {
 	 */
 	public function requiredAssets()
 	{
-		return $this->static ? array($this) : $this->directiveProcessor->requiredAssets();
+		return $this->static ? array($this) : $this->directiveProcessor()->requiredAssets();
 	}
 
 	/**
