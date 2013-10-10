@@ -104,12 +104,18 @@ class Asset {
 	 * Return the filename as it would be after processing
 	 * @return string
 	 */
-	public function name()
+	public function name($digest = false)
 	{
-		$filename = $this->source->getBasename();
 		$extensions = $this->extensions();
+		$basename = $this->source->getBasename(implode($extensions, ''));
 
-		return str_replace(implode(array_slice($extensions, 1)), '', $filename);
+		$filename = $basename;
+		if ($digest) {
+			$filename.= '-' . $this->digest();
+		}
+		$filename.= $extensions[0];
+
+		return $filename;
 	}
 
 	/**
@@ -226,6 +232,16 @@ class Asset {
 
 		// Return the newest last modified time;
 		return $mtimes[0];
+	}
+
+	public function digest()
+	{
+		return md5($this->content());
+	}
+
+	public function isStatic()
+	{
+		return $this->static;
 	}
 
 	protected function directiveProcessor()

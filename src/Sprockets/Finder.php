@@ -40,6 +40,14 @@ class Finder {
 		throw new AssetNotFoundException($name);
 	}
 
+	public function all()
+	{
+		$finder = \Symfony\Component\Finder\Finder::create();
+		$files = iterator_to_array($finder->files()->in($this->loadPaths));
+
+		return array_values($files);
+	}
+
 	public function __invoke($name)
 	{
 		return $this->find($name);

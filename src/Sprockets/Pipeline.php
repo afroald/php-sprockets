@@ -3,6 +3,7 @@
 use Sprockets\Engine\CoffeeScriptEngine;
 use Sprockets\Engine\ScssEngine;
 use Sprockets\Engine\LessEngine;
+use Illuminate\Support\Collection;
 
 class Pipeline {
 	public $finder;
@@ -51,6 +52,17 @@ class Pipeline {
 		$this->assetCache[$cacheKey] = $asset;
 
 		return $asset;
+	}
+
+	public function all()
+	{
+		$pipeline = $this;
+
+		$files = array_map(function($file) use($pipeline) {
+			return new Asset($pipeline, $file->getPathname());
+		}, $this->finder->all());
+
+		return new Collection($files);
 	}
 
 	public function mimeTypes()
