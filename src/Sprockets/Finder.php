@@ -25,7 +25,7 @@ class Finder {
 
 		foreach ($this->loadPaths as $loadPath)
 		{
-			$path = $loadPath . "/$name*";
+			$path = $loadPath . (with(new SplFileInfo($name))->getExtension() ? "/$name*" : "/$name.*");
 
 			$files = glob($path);
 
