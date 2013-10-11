@@ -3,7 +3,7 @@
 use CHH\Shellwords;
 
 class DirectiveProcessor {
-	const HEADER_PATTERN = "%^(//.*\n|#.*\n|/\*[\s\S]*?\*/)*%";
+	const HEADER_PATTERN = "%^(//.*\n?|#.*\n?|/\*[\s\S]*?\*/)*%";
 	const DIRECTIVE_PATTERN = "%^ \W* = \s* (\w+.*?) (\*/)? $%x";
 
 	protected $directiveFunctions = array(
