@@ -4,6 +4,7 @@ use Sprockets\Engine\CoffeeScriptEngine;
 use Sprockets\Engine\ScssEngine;
 use Sprockets\Engine\LessEngine;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 
 class Pipeline {
 	public $finder;
@@ -11,12 +12,12 @@ class Pipeline {
 	public $loadPaths = array();
 
 	protected $mimeTypes = array(
-		'.css' => 'text/css',
-		'.js' => 'application/javascript',
+		'css' => 'text/css',
+		'js' => 'application/javascript',
 
-		'.eot' => 'application/vnd.ms-fontobject',
-		'.ttf' => 'application/octet-stream',
-		'.woff' => 'application/font-woff'
+		'eot' => 'application/vnd.ms-fontobject',
+		'ttf' => 'application/octet-stream',
+		'woff' => 'application/font-woff'
 	);
 
 	protected $preProcessors = array();
@@ -67,6 +68,25 @@ class Pipeline {
 		}, $this->finder->all());
 
 		return new Collection($files);
+	}
+
+	public function guessMimeType(Asset $asset)
+	{
+		$extensions = $asset->extensions();
+
+		if (array_key_exists($extensions[0], $this->mimeTypes))
+		{
+			return $this->mimeTypes[$extensions[0]];
+		}
+
+		$guesser = MimeTypeGuesser::getInstance();
+
+		return $guesser->guess($asset->pathname());
+	}
+
+	public function canProcess(Asset $asset)
+	{
+		return array_intersect(array_keys($this->engines), $asset->extensions()) > 0;
 	}
 
 	public function mimeTypes()

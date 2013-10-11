@@ -1,5 +1,6 @@
 <?php namespace Sprockets;
 
+use SplFileInfo;
 use Sprockets\Exception\AssetNotFoundException;
 
 class Asset {
@@ -13,29 +14,24 @@ class Asset {
 
 	protected $directiveProcessor;
 
-	public function __construct(Pipeline $pipeline, $source)
+	public function __construct(Pipeline $pipeline, $path, $logicalPath)
 	{
 		$this->pipeline = $pipeline;
+		$this->path = new SplFileInfo($path);
+		$this->logicalPath = new SplFileInfo($logicalPath);
 
-		if (!is_a($source, "SplFileInfo"))
+		if (!$this->path->isFile())
 		{
-			$source = new File($source);
+			throw new AssetNotFoundException($logicalPath);
 		}
 
-		if (!$source->isFile())
-		{
-			throw new AssetNotFoundException($source->getFilename());
-		}
-
-		$this->source = $source;
+		$this->mimeType = $this->pipeline->guessMimeType($this);
 
 		// Check if this is a file we can process. If not, treat it as a static asset (image, font, etc.)
-		// Assume only css and js files need to be processed for now.
-		if (!in_array($this->mimeType, array('text/css', 'application/javascript')))
+		if (!$this->pipeline->canProcess($this))
 		{
 			$this->static = true;
 		}
-
 	}
 
 	/**
@@ -84,6 +80,26 @@ class Asset {
 		return $this->content();
 	}
 
+	public function logicalPath()
+	{
+		return $this->logicalPath->getPath();
+	}
+
+	public function logicalPathname()
+	{
+		return $this->logicalPath->getPathname();
+	}
+
+	public function path()
+	{
+		return $this->path->getPath();
+	}
+
+	public function pathname()
+	{
+		return $this->path->getPathname();
+	}
+
 	/**
 	 * Return the processed content excluding the dependencies.
 	 * @return string
@@ -118,29 +134,18 @@ class Asset {
 		return $filename;
 	}
 
-	/**
-	 * Return the path to the asset, omitting the filename and any trailing slash.
-	 * @return string
-	 */
-	public function path()
+	public function extensions()
 	{
-		return $this->source->getPath();
+		$matches = array();
+
+		preg_match_all('/\.([^.]+)/', $this->path->getBasename(), $matches);
+
+		return $matches[1];
 	}
 
-	/**
-	 * Returns the path of the source relative to the load path
-	 * @return string
-	 */
-	public function logicalPath()
+	public function mimeType()
 	{
-		$path = $this->source->getPath();
-
-		foreach($this->pipeline->loadPaths as $loadPath)
-		{
-			$path = str_replace($loadPath, '', $path);
-		}
-
-		return $path . '/' . $this->name;
+		return $this->mimeType;
 	}
 
 	/**
@@ -159,35 +164,6 @@ class Asset {
 	public function requiredAssets()
 	{
 		return $this->static ? array($this) : $this->directiveProcessor()->requiredAssets();
-	}
-
-	/**
-	 * Return the mime-type of the asset.
-	 *
-	 * First try to resolve the mime-type
-	 * according to the file extension. If that doesn't work use the FileInfo
-	 * PECL extension. Return text/html if not able to determine the mime-type
-	 *
-	 * @return string
-	 */
-	public function mimeType()
-	{
-		$mimeTypes = $this->pipeline->mimeTypes();
-		$extensions = $this->extensions();
-
-		if (array_key_exists($extensions[0], $mimeTypes)) {
-			return $mimeTypes[$extensions[0]];
-		}
-
-		if (function_exists('finfo_file')) {
-			$finfo = finfo_open(FILEINFO_MIME_TYPE);
-			$mimeType = finfo_file($finfo, $this->source->getPathname());
-			finfo_close($finfo);
-
-			return $mimeType;
-		}
-
-		return 'text/html';
 	}
 
 	/**
@@ -252,15 +228,6 @@ class Asset {
 		}
 
 		return $this->directiveProcessor;
-	}
-
-	protected function extensions()
-	{
-		$matches = array();
-
-		preg_match_all('/\.[^.]+/', $this->source->getBasename(), $matches);
-
-		return $matches[0];
 	}
 
 	protected function process()
