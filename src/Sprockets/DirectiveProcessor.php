@@ -85,7 +85,7 @@ class DirectiveProcessor {
 
 		$lineNumber = 0;
 
-		foreach(preg_split('/\r\n|\n|\r/', $header) as $line)
+		foreach(preg_split('/\r\n|\n|\r/', $header, null, PREG_SPLIT_NO_EMPTY) as $line)
 		{
 			$lineNumber += 1;
 			$matches = array();
