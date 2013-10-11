@@ -27,7 +27,8 @@
         "symfony/http-foundation": "2.3.*"
     },
     "require-dev": {
-        "oodle/krumo": "0.2.3"
+        "oodle/krumo": "0.2.3",
+        "symfony/debug": "2.3.*"
     },
     "autoload": {
         "psr-0": {
