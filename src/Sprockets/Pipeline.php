@@ -24,7 +24,7 @@ class Pipeline {
 	protected $engines = array();
 	protected $compressors = array();
 
-	protected $assetCache = array();
+	protected $assets = array();
 
 	public function __construct(array $loadPaths)
 	{
@@ -37,19 +37,23 @@ class Pipeline {
 		$this->registerEngine('.less', new LessEngine($this));
 	}
 
-	public function asset($name, $type = null)
+	public function asset($logicalPath, $type = null)
 	{
-		$file = $this->finder->find($name, $type);
-		$cacheKey = md5($file);
+		$file = $this->finder->find($logicalPath, $type);
 
-		if (array_key_exists($cacheKey, $this->assetCache))
+		if (!is_a($file, 'SplFileInfo'))
 		{
-			return $this->assetCache[$cacheKey];
+			throw new AssetNotFoundException($logicalPath);
 		}
 
-		$asset = new Asset($this, $file);
+		if (array_key_exists($file->getRelativePathname(), $this->assets))
+		{
+			return $this->assets[$file->getRelativePathname()];
+		}
 
-		$this->assetCache[$cacheKey] = $asset;
+		$asset = new Asset($this, $file->getPathname(), $file->getRelativePathname());
+
+		$this->assets[$file->getRelativePath()] = $asset;
 
 		return $asset;
 	}
