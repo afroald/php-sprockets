@@ -2,6 +2,7 @@
 
 use SplFileInfo;
 use Sprockets\Exception\AssetNotFoundException;
+use Symfony\Component\Finder\Finder as SymfonyFinder;
 
 class Finder {
 	protected $loadPaths;
@@ -16,34 +17,30 @@ class Finder {
 		$this->loadPaths = $loadPaths;
 	}
 
-	public function find($name, $type = null)
+	public function find($logicalPath, $type = null)
 	{
-		if ($type && !with(new SplFileInfo($name))->getExtension())
+		$searchPath = $logicalPath;
+
+		if ($type && !pathinfo($logicalPath, PATHINFO_EXTENSION))
 		{
-			$name.= $this->typeExtensions[$type];
+			$searchPath.= $this->typeExtensions[$type];
 		}
 
-		foreach ($this->loadPaths as $loadPath)
-		{
-			$path = $loadPath . (with(new SplFileInfo($name))->getExtension() ? "/$name*" : "/$name.*");
+		$searchPath = new SplFileInfo($searchPath);
 
-			$files = glob($path);
+		$finder = $this->newFinder();
+		$finder->path($searchPath->getPath());
+		$finder->name($searchPath->getBasename() . ($searchPath->getExtension() == "" ? '.*' : '*'));
 
-			if (count($files) > 0)
-			{
-				$file = new SplFileInfo($files[0]);
+		$iterator = $finder->getIterator();
+		$iterator->rewind();
 
-				return $file->getRealPath();
-			}
-		}
-
-		throw new AssetNotFoundException($name);
+		return $iterator->current();
 	}
 
 	public function all()
 	{
-		$finder = \Symfony\Component\Finder\Finder::create();
-		$files = iterator_to_array($finder->files()->in($this->loadPaths));
+		$files = iterator_to_array($this->newFinder());
 
 		return array_values($files);
 	}
@@ -51,5 +48,10 @@ class Finder {
 	public function __invoke($name)
 	{
 		return $this->find($name);
+	}
+
+	protected function newFinder()
+	{
+		return SymfonyFinder::create()->ignoreDotFiles(true)->files()->in($this->loadPaths);
 	}
 }

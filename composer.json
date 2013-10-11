@@ -23,7 +23,7 @@
         "leafo/lessphp": "dev-master",
         "coffeescript/coffeescript": "dev-master",
         "chh/shellwords": "0.1.0",
-        "symfony/finder": "2.3.*"
+        "symfony/finder": "2.3.*",
     },
     "require-dev": {
         "oodle/krumo": "0.2.3"
