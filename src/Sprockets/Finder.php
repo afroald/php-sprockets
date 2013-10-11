@@ -18,7 +18,7 @@ class Finder {
 
 	public function find($name, $type = null)
 	{
-		if ($type && !with(new SplFileInfo($name))->getExtension() && array_key_exists($type, $this->typeExtensions))
+		if ($type && !with(new SplFileInfo($name))->getExtension())
 		{
 			$name.= $this->typeExtensions[$type];
 		}
