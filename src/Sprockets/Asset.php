@@ -1,6 +1,7 @@
 <?php namespace Sprockets;
 
 use SplFileInfo;
+use Sprockets\Asset\LogicalPath;
 use Sprockets\Exception\AssetNotFoundException;
 
 class Asset {
@@ -9,18 +10,18 @@ class Asset {
 	protected $bundledContent = '';
 
 	protected $pipeline;
-
 	protected $source;
+	protected $logicalPath;
 
 	protected $directiveProcessor;
 
-	public function __construct(Pipeline $pipeline, $path, $logicalPath)
+	public function __construct(Pipeline $pipeline, $source, $logicalPath)
 	{
 		$this->pipeline = $pipeline;
-		$this->path = new SplFileInfo($path);
-		$this->logicalPath = new SplFileInfo($logicalPath);
+		$this->source = new File($source);
+		$this->logicalPath = new LogicalPath($logicalPath);
 
-		if (!$this->path->isFile())
+		if (!$this->source->isFile())
 		{
 			throw new AssetNotFoundException($logicalPath);
 		}
@@ -28,10 +29,7 @@ class Asset {
 		$this->mimeType = $this->pipeline->guessMimeType($this);
 
 		// Check if this is a file we can process. If not, treat it as a static asset (image, font, etc.)
-		if (!$this->pipeline->canProcess($this))
-		{
-			$this->static = true;
-		}
+		$this->static = !$this->pipeline->canProcess($this);
 	}
 
 	/**
@@ -92,12 +90,12 @@ class Asset {
 
 	public function path()
 	{
-		return $this->path->getPath();
+		return $this->source->getPath();
 	}
 
 	public function pathname()
 	{
-		return $this->path->getPathname();
+		return $this->source->getPathname();
 	}
 
 	/**
@@ -120,16 +118,16 @@ class Asset {
 	 * Return the filename as it would be after processing
 	 * @return string
 	 */
-	public function name($digest = false)
+	public function filename($digest = false)
 	{
 		$extensions = $this->extensions();
-		$basename = $this->source->getBasename(implode($extensions, ''));
+		$basename = $this->source->getBasename('.' . implode($extensions, '.'));
 
 		$filename = $basename;
 		if ($digest) {
 			$filename.= '-' . $this->digest();
 		}
-		$filename.= $extensions[0];
+		$filename.= '.' . $extensions[0];
 
 		return $filename;
 	}
@@ -138,7 +136,7 @@ class Asset {
 	{
 		$matches = array();
 
-		preg_match_all('/\.([^.]+)/', $this->path->getBasename(), $matches);
+		preg_match_all('/\.([^.]+)/', $this->source->getBasename(), $matches);
 
 		return $matches[1];
 	}
@@ -240,7 +238,7 @@ class Asset {
 		// Run pre-processors
 
 		// Run engines
-		foreach ($this->extensions as $extension)
+		foreach ($this->extensions() as $extension)
 		{
 			$engine = $this->pipeline->engine($extension);
 

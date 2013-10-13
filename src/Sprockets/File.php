@@ -1,31 +1,26 @@
 <?php namespace Sprockets;
 
 use SplFileInfo;
+use Symfony\Component\Filesystem\Filesystem;
 
 class File extends SplFileInfo
 {
-	protected $content = '';
-	protected $lastRead;
-
 	public function get()
 	{
-		if (empty($this->content) || $this->getMTime() > $this->lastRead)
-		{
-			$this->content = file_get_contents($this->getPathname());
-			$this->lastRead = $this->getMTime();
-		}
+		$level = error_reporting(0);
+        $content = file_get_contents($this->getPathname());
+        error_reporting($level);
+        if (false === $content) {
+            $error = error_get_last();
+            throw new \RuntimeException($error['message']);
+        }
 
-		return $this->content;
+        return $content;
 	}
 
-	public function put($content)
+	public function put($content, $mode = 0666)
 	{
-		$path = new SplFileInfo($this->getPath());
-		if (!$path->isDir())
-		{
-			mkdir($path, 0777, true);
-		}
-
-		return file_put_contents($this->getPathname(), $content);
+		$filesystem = new Filesystem();
+		$filesystem->dumpFile($this->getPathname(), $content, $mode);
 	}
 }

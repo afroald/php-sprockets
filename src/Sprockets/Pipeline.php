@@ -33,9 +33,9 @@ class Pipeline {
 
 		$this->finder = new Finder($loadPaths);
 
-		$this->registerEngine('.coffee', new CoffeeScriptEngine($this));
-		$this->registerEngine('.scss', new ScssEngine($this));
-		$this->registerEngine('.less', new LessEngine($this));
+		$this->registerEngine('coffee', new CoffeeScriptEngine($this));
+		$this->registerEngine('scss', new ScssEngine($this));
+		$this->registerEngine('less', new LessEngine($this));
 	}
 
 	public function asset($logicalPath, $type = null)
@@ -64,7 +64,7 @@ class Pipeline {
 		$pipeline = $this;
 
 		$files = array_map(function($file) use($pipeline) {
-			return new Asset($pipeline, $file->getPathname());
+			return new Asset($pipeline, $file->getPathname(), $file->getRelativePathname());
 		}, $this->finder->all());
 
 		return new Collection($files);
@@ -86,7 +86,7 @@ class Pipeline {
 
 	public function canProcess(Asset $asset)
 	{
-		return array_intersect(array_keys($this->engines), $asset->extensions()) > 0;
+		return count(array_intersect(array_keys($this->engines), $asset->extensions())) > 0;
 	}
 
 	public function mimeTypes()
