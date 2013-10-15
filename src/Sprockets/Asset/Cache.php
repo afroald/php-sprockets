@@ -15,9 +15,10 @@ class Cache {
 	{
 		$this->cachePath = new SplFileInfo($cachePath);
 
-		$filesystem = new Filesystem();
 		if (!$this->cachePath->isDir())
 		{
+			$filesystem = new Filesystem();
+
 			try
 			{
 				$filesystem->mkdir($this->cachePath->getPathname());
