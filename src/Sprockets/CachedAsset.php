@@ -28,4 +28,19 @@ class CachedAsset extends Asset {
 		return $this->cache->storeContent($this, parent::content());
 	}
 
+	public function body()
+	{
+		if ($this->static)
+		{
+			return parent::body();
+		}
+
+		if ($this->cache->hasBody($this))
+		{
+			return $this->cache->getBody($this);
+		}
+
+		return $this->cache->storeBody($this, parent::body());
+	}
+
 }

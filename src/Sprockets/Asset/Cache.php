@@ -36,29 +36,61 @@ class Cache {
 
 	public function hasContent(Asset $asset)
 	{
-		$file = $this->getFileForAsset($asset);
+		$file = $this->getFileForAssetContent($asset);
+
+		if (!$file->isFile())
+			return false;
 
 		return $file->getMTime() >= $asset->lastModified->getTimestamp();
 	}
 
 	public function getContent(Asset $asset)
 	{
-		$file = $this->getFileForAsset($asset);
+		$file = $this->getFileForAssetContent($asset);
 
 		return $file->get();
 	}
 
 	public function storeContent(Asset $asset, $content)
 	{
-		$file = $this->getFileForAsset($asset);
-		krumo($file->getPathname());
+		$file = $this->getFileForAssetContent($asset);
 		$file->put($content);
 
 		return $content;
 	}
 
-	protected function getFileForAsset(Asset $asset)
+	protected function getFileForAssetContent(Asset $asset)
 	{
-		return new File(sprintf('%s/%s', $this->cachePath->getPathname(), sha1($asset->filename)));
+		return new File(sprintf('%s/%s', $this->cachePath->getPathname(), sha1($asset->logicalPathname . 'content')));
+	}
+
+	public function hasBody(Asset $asset)
+	{
+		$file = $this->getFileForAssetBody($asset);
+
+		if (!$file->isFile())
+			return false;
+
+		return $file->getMTime() >= $asset->lastModified->getTimestamp();
+	}
+
+	public function getBody(Asset $asset)
+	{
+		$file = $this->getFileForAssetBody($asset);
+
+		return $file->get();
+	}
+
+	public function storeBody(Asset $asset, $body)
+	{
+		$file = $this->getFileForAssetBody($asset);
+		$file->put($body);
+
+		return $body;
+	}
+
+	protected function getFileForAssetBody(Asset $asset)
+	{
+		return new File(sprintf('%s/%s', $this->cachePath->getPathname(), sha1($asset->logicalPathname . 'body')));
 	}
 }
