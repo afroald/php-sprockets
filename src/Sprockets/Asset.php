@@ -210,7 +210,7 @@ class Asset {
 
 	public function digest()
 	{
-		return md5($this->content());
+		return sha1($this->content());
 	}
 
 	public function isStatic()

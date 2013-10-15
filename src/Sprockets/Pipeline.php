@@ -1,13 +1,12 @@
 <?php namespace Sprockets;
 
-use Sprockets\Engine\CoffeeScriptEngine;
-use Sprockets\Engine\ScssEngine;
-use Sprockets\Engine\LessEngine;
+use Sprockets\Engine;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 
 class Pipeline {
 	public $finder;
+	public $assetCache;
 
 	public $loadPaths = array();
 
@@ -27,15 +26,16 @@ class Pipeline {
 
 	protected $assets = array();
 
-	public function __construct(array $loadPaths)
+	public function __construct(array $loadPaths, $cachePath = null)
 	{
 		$this->loadPaths = $loadPaths;
 
 		$this->finder = new Finder($loadPaths);
+		$this->assetCache = new Asset\Cache($cachePath);
 
-		$this->registerEngine('coffee', new CoffeeScriptEngine($this));
-		$this->registerEngine('scss', new ScssEngine($this));
-		$this->registerEngine('less', new LessEngine($this));
+		$this->registerEngine('coffee', new Engine\CoffeeScriptEngine($this));
+		$this->registerEngine('scss', new Engine\ScssEngine($this));
+		$this->registerEngine('less', new Engine\LessEngine($this));
 	}
 
 	public function asset($logicalPath, $type = null)
@@ -52,7 +52,14 @@ class Pipeline {
 			return $this->assets[$file->getRelativePathname()];
 		}
 
-		$asset = new Asset($this, $file->getPathname(), $file->getRelativePathname());
+		if ($this->assetCache->isValid())
+		{
+			$asset = new CachedAsset($this, $file->getPathname(), $file->getRelativePathname(), $this->assetCache);
+		}
+		else
+		{
+			$asset = new Asset($this, $file->getPathname(), $file->getRelativePathname());
+		}
 
 		$this->assets[$file->getRelativePath()] = $asset;
 
