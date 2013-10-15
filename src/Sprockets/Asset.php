@@ -182,7 +182,7 @@ class Asset {
 		$currentAsset = $this;
 		$mtimes = array_map(function($dependency) use($currentAsset)
 		{
-			if ($dependency == $currentAsset)
+			if ($dependency === $currentAsset)
 			{
 				return $lastModified;
 			}

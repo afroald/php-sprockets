@@ -31,7 +31,7 @@ class DirectiveProcessor {
 	{
 		$this->process();
 
-		if (array_search($this->asset, $this->dependencies) === false)
+		if (!in_array($this->asset, $this->dependencies, true))
 		{
 			$this->dependOn($this->asset);
 		}
