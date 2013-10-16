@@ -20,7 +20,7 @@
     "require": {
         "leafo/scssphp": "dev-master",
         "leafo/scssphp-compass": "dev-master",
-        "leafo/lessphp": "dev-master",
+        "leafo/lessphp": "0.4.0",
         "coffeescript/coffeescript": "dev-master",
         "chh/shellwords": "0.1.0",
         "symfony/finder": "2.3.*",
