@@ -137,7 +137,7 @@ class Pipeline {
 		$this->filters->registerEngine('coffee', new Filter\CoffeeScriptFilter($this->config['filters']['coffeescript']));
 		$this->filters->registerEngine('less', new Filter\LessFilter());
 
-		if ($this->config['cache_path'])
+		if ($this->assetCache->isValid())
 		{
 			$this->config['filters']['sass']['cache_path'] = $this->config['cache_path'] . DIRECTORY_SEPARATOR . 'sass-cache';
 		}
