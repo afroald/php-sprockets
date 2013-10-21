@@ -93,7 +93,9 @@ class Pipeline {
 
 	public function canProcess(Asset $asset)
 	{
-		return count(array_intersect(array_keys($this->engines), $asset->extensions())) > 0;
+		$engineKeys = array_merge(array_keys($this->engines), array('js', 'css'));
+
+		return count(array_intersect($engineKeys, $asset->extensions())) > 0;
 	}
 
 	public function mimeTypes()
