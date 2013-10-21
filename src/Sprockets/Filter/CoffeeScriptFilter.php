@@ -17,7 +17,7 @@ class CoffeeScriptFilter extends BaseProcessFilter {
 
 	protected function command(Asset $asset, TmpFile $tmpFile)
 	{
-		$options = array('c', 'p', 'l');
+		$options = array('c', 'p');
 
 		if ($this->bare)
 		{
