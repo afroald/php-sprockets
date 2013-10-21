@@ -90,12 +90,12 @@ class Asset {
 
 	public function path()
 	{
-		return $this->source->getPath();
+		return $this->source->getPathInfo()->getRealPath();
 	}
 
 	public function pathname()
 	{
-		return $this->source->getPathname();
+		return $this->source->getRealPath();
 	}
 
 	/**
@@ -235,20 +235,16 @@ class Asset {
 		// We want to run all the processors on the file without the directives included.
 		$content = $this->directiveProcessor()->body();
 
-		// Run pre-processors
-
 		// Run engines
 		foreach ($this->extensions() as $extension)
 		{
-			$engine = $this->pipeline->engine($extension);
+			$engine = $this->pipeline->filters->engine($extension);
 
 			if ($engine)
 			{
 				$content = $engine->process($this, $content);
 			}
 		}
-
-		// Run post-processors
 
 		$this->processedContent = $content;
 	}
@@ -280,6 +276,8 @@ class Asset {
 		{
 			$content.= $this->body();
 		}
+
+		// Run compressors
 
 		$this->bundledContent = $content;
 	}

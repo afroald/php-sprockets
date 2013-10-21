@@ -1,11 +1,12 @@
 <?php namespace Sprockets;
 
-use Sprockets\Engine;
+use Sprockets\Filter;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 
 class Pipeline {
 	public $finder;
+	public $filters;
 	public $assetCache;
 
 	public $loadPaths = array();
@@ -14,15 +15,11 @@ class Pipeline {
 		'css' => 'text/css',
 		'js' => 'application/javascript',
 
-		'eot' => 'application/vnd.ms-fontobject',
-		'ttf' => 'application/octet-stream',
+		'ttf' => 'application/x-font-ttf',
+		'otf' => 'application/font-otf',
+		'eot' => 'application/octet-stream',
 		'woff' => 'application/font-woff'
 	);
-
-	protected $preProcessors = array();
-	protected $postProcessors = array();
-	protected $engines = array();
-	protected $compressors = array();
 
 	protected $assets = array();
 
@@ -32,10 +29,9 @@ class Pipeline {
 
 		$this->finder = new Finder($loadPaths);
 		$this->assetCache = new Asset\Cache($cachePath);
+		$this->filters = new FilterManager;
 
-		$this->registerEngine('coffee', new Engine\CoffeeScriptEngine($this));
-		$this->registerEngine('scss', new Engine\ScssEngine($this));
-		$this->registerEngine('less', new Engine\LessEngine($this));
+		$this->registerDefaultFilters();
 	}
 
 	public function asset($logicalPath, $type = null)
@@ -93,9 +89,19 @@ class Pipeline {
 
 	public function canProcess(Asset $asset)
 	{
-		$engineKeys = array_merge(array_keys($this->engines), array('js', 'css'));
+		if (count(array_intersect(array('js', 'css'), $asset->extensions())) > 0)
+		{
+			return true;
+		}
 
-		return count(array_intersect($engineKeys, $asset->extensions())) > 0;
+		$filters = $this->filters;
+
+		$assetFilters = array_filter($asset->extensions(), function($extension) use ($filters)
+		{
+			return $filters->hasEngine($extension) || $filters->hasCompressor($extension);
+		});
+
+		return count($assetFilters) > 0;
 	}
 
 	public function mimeTypes()
@@ -103,48 +109,15 @@ class Pipeline {
 		return $this->mimeTypes;
 	}
 
-	public function engine($extension)
-	{
-		return array_key_exists($extension, $this->engines) ? $this->engines[$extension] : null;
-	}
-
-	public function engines()
-	{
-		return $this->engines;
-	}
-
 	public function registerMimeType($mimeType, $extension)
 	{
 		$this->mimeTypes[$extension] = $mimeType;
 	}
 
-	public function registerPreProcessor($mimeType, $class)
+	protected function registerDefaultFilters()
 	{
-		if (!array_key_exists($mimeType, $this->preProcessors) or !is_array($this->preProcessors[$mimeType]))
-		{
-			$this->preProcessors[$mimeType] = array();
-		}
-
-		$this->preProcessors[$mimeType][] = $class;
-	}
-
-	public function registerPostProcessor($mimeType, $class)
-	{
-
-	}
-
-	public function registerEngine($extension, $class)
-	{
-		$this->engines[$extension] = $class;
-	}
-
-	public function registerCompressor($mimeType, $id, $class)
-	{
-		if (!array_key_exists($mimeType, $this->compressors) or !is_array($this->compressors[$mimeType]))
-		{
-			$this->compressors[$mimeType] = array();
-		}
-
-		$this->compressors[$mimeType][$id] = $class;
+		$this->filters->registerEngine('coffee', new Filter\CoffeeScriptFilter());
+		$this->filters->registerEngine('scss', new Filter\ScssFilter());
+		$this->filters->registerEngine('less', new Filter\LessFilter());
 	}
 }
