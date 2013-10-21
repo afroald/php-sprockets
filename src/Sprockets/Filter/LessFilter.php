@@ -1,8 +1,11 @@
 <?php namespace Sprockets\Filter;
 
+use Sprockets\Asset;
+use Sprockets\TmpFile;
+
 class LessFilter extends BaseProcessFilter {
 
-	protected function command($asset, $tmpFile)
+	protected function command(Asset $asset, TmpFile $tmpFile)
 	{
 		return array(
 			'lessc',

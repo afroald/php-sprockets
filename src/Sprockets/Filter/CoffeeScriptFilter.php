@@ -1,10 +1,30 @@
 <?php namespace Sprockets\Filter;
 
+use Sprockets\Asset;
+use Sprockets\TmpFile;
+
 class CoffeeScriptFilter extends BaseProcessFilter {
 
-	protected function command($asset, $tmpFile)
+	protected $bare = false;
+
+	public function __construct($config = array())
 	{
-		return array('coffee', '-cpl', $tmpFile->getRealPath());
+		if (array_key_exists('bare', $config))
+		{
+			$this->bare = $config['bare'];
+		}
+	}
+
+	protected function command(Asset $asset, TmpFile $tmpFile)
+	{
+		$options = array('c', 'p', 'l');
+
+		if ($this->bare)
+		{
+			$options[] = 'b';
+		}
+
+		return array('coffee', '-'.implode($options), $tmpFile->getRealPath());
 	}
 
 }
