@@ -40,7 +40,7 @@ class Pipeline {
 		)
 	);
 
-	public function __construct(array $loadPaths, $config = array())
+	public function __construct(array $loadPaths, array $config = array())
 	{
 		$this->loadPaths = $loadPaths;
 		$this->config = $this->mergeOptions($this->config, $config);
