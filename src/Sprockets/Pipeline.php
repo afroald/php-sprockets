@@ -23,12 +23,30 @@ class Pipeline {
 
 	protected $assets = array();
 
-	public function __construct(array $loadPaths, $cachePath = null)
+	protected $config = array(
+		'debug' => false,
+		'cache_path' => null,
+
+		'js_compressor' => null,
+		'css_compressor' => null,
+
+		'filters' => array(
+			'coffeescript' => array(
+				'bare' => false
+			),
+			'sass' => array(
+				'compass' => false
+			)
+		)
+	);
+
+	public function __construct(array $loadPaths, $config = array())
 	{
 		$this->loadPaths = $loadPaths;
+		$this->config = $this->mergeOptions($this->config, $config);
 
 		$this->finder = new Finder($loadPaths);
-		$this->assetCache = new Asset\Cache($cachePath);
+		$this->assetCache = new Asset\Cache($this->config['cache_path']);
 		$this->filters = new FilterManager;
 
 		$this->registerDefaultFilters();
@@ -116,8 +134,38 @@ class Pipeline {
 
 	protected function registerDefaultFilters()
 	{
-		$this->filters->registerEngine('coffee', new Filter\CoffeeScriptFilter());
-		$this->filters->registerEngine('scss', new Filter\ScssFilter());
+		$this->filters->registerEngine('coffee', new Filter\CoffeeScriptFilter($this->config['filters']['coffeescript']));
 		$this->filters->registerEngine('less', new Filter\LessFilter());
+
+		if ($this->config['cache_path'])
+		{
+			$this->config['filters']['sass']['cache_path'] = $this->config['cache_path'] . DIRECTORY_SEPARATOR . 'sass-cache';
+		}
+		$this->filters->registerEngine('sass', new Filter\SassFilter($this->config['filters']['sass']));
+		$this->filters->registerEngine('scss', new Filter\ScssFilter($this->config['filters']['sass']));
+	}
+
+	protected function mergeOptions($defaults, $options)
+	{
+		foreach ($options as $key => $value)
+		{
+			if (array_key_exists($key, $defaults))
+			{
+				if (is_array($defaults[$key]))
+				{
+					$defaults[$key] = $this->mergeOptions($defaults[$key], $options[$key]);
+				}
+				else
+				{
+					$defaults[$key] = $value;
+				}
+			}
+			else
+			{
+				$defaults[$key] = $value;
+			}
+		}
+
+		return $defaults;
 	}
 }
