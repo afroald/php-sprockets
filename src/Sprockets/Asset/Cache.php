@@ -4,6 +4,7 @@ use SplFileInfo;
 use Sprockets\Asset;
 use Sprockets\File;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 
 class Cache {
@@ -23,7 +24,7 @@ class Cache {
 			{
 				$filesystem->mkdir($this->cachePath->getPathname());
 			}
-			catch(Symfony\Component\Filesystem\Exception\IOException $exception)
+			catch(IOException $exception)
 			{
 				$this->valid = false;
 			}
