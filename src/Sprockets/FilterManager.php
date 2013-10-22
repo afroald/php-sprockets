@@ -45,7 +45,7 @@ class FilterManager {
 
 	protected function createCompressor($mimeType)
 	{
-		$creator = $this->engineCreators[$mimeType];
+		$creator = $this->compressorCreators[$mimeType];
 
 		$compressor = is_callable($creator) ? $creator() : $creator;
 

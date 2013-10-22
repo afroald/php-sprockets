@@ -27,8 +27,8 @@ class Pipeline {
 		'debug' => false,
 		'cache_path' => null,
 
-		'js_compressor' => null,
-		'css_compressor' => null,
+		'compress_js' => false,
+		'compress_css' => false,
 
 		'filters' => array(
 			'coffeescript' => array(
@@ -122,6 +122,22 @@ class Pipeline {
 		return count($assetFilters) > 0;
 	}
 
+	public function shouldCompress(Asset $asset)
+	{
+		$mimeType = $asset->mimeType();
+
+		if ($mimeType == 'application/javascript')
+		{
+			$key = 'compress_js';
+		}
+		else if ($mimeType == 'text/css')
+		{
+			$key = 'compress_css';
+		}
+
+		return !!$this->config[$key];
+	}
+
 	public function mimeTypes()
 	{
 		return $this->mimeTypes;
@@ -143,6 +159,9 @@ class Pipeline {
 		}
 		$this->filters->registerEngine('sass', new Filter\SassFilter($this->config['filters']['sass']));
 		$this->filters->registerEngine('scss', new Filter\ScssFilter($this->config['filters']['sass']));
+
+		$this->filters->registerCompressor('text/css', new Filter\SassCompressorFilter($this->config['filters']['sass']));
+		$this->filters->registerCompressor('application/javascript', new Filter\UglifyjsCompressorFilter);
 	}
 
 	protected function mergeOptions($defaults, $options)

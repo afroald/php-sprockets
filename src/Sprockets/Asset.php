@@ -277,7 +277,12 @@ class Asset {
 			$content.= $this->body();
 		}
 
-		// Run compressors
+		if ($this->pipeline->shouldCompress($this))
+		{
+			$compressor = $this->pipeline->filters->compressor($this->mimeType());
+
+			$content = $compressor->process($this, $content);
+		}
 
 		$this->bundledContent = $content;
 	}
