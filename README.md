@@ -3,6 +3,8 @@ A port (kind of) of the [Sprockets](https://github.com/sstephenson/sprockets) ge
 
 It functions the same as Sprockets, except that this isn't able to serve the assets.
 
+It concatenates, pre-processes and compresses your assets.
+
 ## It goes something like this
 Set-up the asset pipeline.
 
@@ -40,3 +42,10 @@ The directives implemented so far:
 
 - `require`
 - `require_self`
+
+## Filters added so far
+
+- CoffeeScript
+- Less
+- Sass
+- UglifyJS
