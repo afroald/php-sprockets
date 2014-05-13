@@ -125,14 +125,20 @@ class Pipeline {
 	public function shouldCompress(Asset $asset)
 	{
 		$mimeType = $asset->mimeType();
+		$key = null;
 
-		if ($mimeType == 'application/javascript')
-		{
-			$key = 'compress_js';
+		switch($mimeType) {
+			case 'application/javascript':
+				$key = 'compress_js';
+				break;
+
+			case 'text/css':
+				$key = 'compress_css';
+				break;
 		}
-		else if ($mimeType == 'text/css')
-		{
-			$key = 'compress_css';
+
+		if (!$key) {
+			return false;
 		}
 
 		return !!$this->config[$key];
