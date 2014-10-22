@@ -1,6 +1,7 @@
 <?php namespace Sprockets;
 
 use Sprockets\Filter;
+use Sprockets\Exception\AssetNotFoundException;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 
